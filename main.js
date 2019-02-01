@@ -89,6 +89,7 @@ function compareColor(e) {
                 color[i].style.visibility = "visible";
             }
         }
+        setTimeout(newGame, 1500);
     } else {
         msg.innerText = "Try again"
         msg.style.display = "inline-block";
