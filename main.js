@@ -1,99 +1,71 @@
-let rgbText = document.getElementById("rgb");
-let msg = document.getElementById("msg");
-let newGameBtn = document.getElementById("new");
-let difficultBtn = document.getElementsByClassName("btn");
-let color = document.getElementsByClassName("color");
-var difficult;
-var r, g, b;
-var correctAns;
+const title = document.getElementById("rgb");
+const newGameButton = document.getElementById("new");
+const message = document.getElementById("msg");
+const difficultBtn = document.querySelectorAll(".btn");
+const gameContainer = document.getElementsByClassName("center")[0];
+let correctAns,
+  difficulty = "easy";
 
-newGameBtn.addEventListener("click", newGame);
-Array.from(difficultBtn).forEach(function (element) {
-    element.addEventListener("click", difficultchoose);
+const random = () => Math.floor(Math.random() * 256);
+const createColor = () => `rgb(${random()},${random()},${random()})`;
+
+const checkColor = e => {
+  const selectedColor = e.target.style.backgroundColor;
+  if (selectedColor === correctAns) {
+    message.textContent = "correct";
+    const divs = document.querySelectorAll(".color");
+    divs.forEach(element => {
+      element.style.backgroundColor = correctAns;
+      element.style.visibility = "visible";
+      element.removeEventListener("click", checkColor);
+    });
+    setTimeout(() => render(), 2000);
+    newGameButton.disabled = true;
+  } else {
+    message.textContent = "wrong try again";
+    e.target.style.visibility = "hidden";
+  }
+};
+
+const difficultchoose = e => {
+  if (!e.target.classList.contains("selected")) {
+    if (e.target.innerHTML === "easy") {
+      e.target.classList.add("selected");
+      e.target.nextElementSibling.classList.remove("selected");
+      difficulty = "easy";
+    } else if (e.target.innerHTML === "hard") {
+      e.target.classList.add("selected");
+      e.target.previousElementSibling.classList.remove("selected");
+      difficulty = "hard";
+    }
+    render();
+  }
+};
+
+difficultBtn.forEach(btn => {
+  btn.addEventListener("click", difficultchoose);
 });
 
-newGame();
+const createElements = level => {
+  const chosenColors = [];
+  gameContainer.innerHTML = "";
+  for (let i = 0; i < level; i++) {
+    const div = document.createElement("div");
+    div.style.backgroundColor = createColor();
+    div.setAttribute("class", "color");
+    chosenColors.push(div.style.backgroundColor);
+    gameContainer.appendChild(div);
+    div.addEventListener("click", checkColor);
+  }
+  correctAns = chosenColors[Math.floor(Math.random() * 3)];
+  title.textContent = correctAns.toUpperCase();
+};
 
-function difficultSelected() {
-    let difficultSelected = document.getElementById("difficult");
-    if (difficultSelected.firstElementChild.classList.contains("selected")) {
-        difficult = "easy";
-    } else if (difficultSelected.lastElementChild.classList.contains("selected")) {
-        difficult = "hard";
-    }
-}
+const render = () => {
+  message.textContent = "";
+  newGameButton.disabled = false;
+  difficulty === "easy" ? createElements(3) : createElements(6);
+};
 
-function newGame() {
-    difficultSelected();
-    msg.style.display = "none";
-    if (difficult === "easy") {
-        for (i = 0; i < 3; i++) {
-            color[i].addEventListener("click", compareColor);
-            color[i].style.backgroundColor = randomColor();
-            color[i].style.display = "inline-block";
-            color[i].style.visibility = "visible";
-            color[i + 3].style.display = "none";
-        }
-        correctAns = color[Math.floor((Math.random() * 3))].style.backgroundColor;
-        rgbText.innerText = correctAns;
-    } else {
-        for (i = 0; i < 6; i++) {
-            color[i].addEventListener("click", compareColor);
-            color[i].style.backgroundColor = randomColor();
-            color[i].style.display = "inline-block";
-            color[i].style.visibility = "visible";
-        }
-        correctAns = color[Math.floor((Math.random() * 3))].style.backgroundColor;
-        rgbText.innerText = correctAns;
-    }
-}
-
-function difficultchoose(e) {
-    if (e.target.innerHTML === "easy") {
-        if (!e.target.classList.contains("selected")) {
-            e.target.classList.add("selected");
-            e.target.nextElementSibling.classList.remove("selected");
-        }
-        difficult = "easy";
-    } else if (e.target.innerHTML === "hard") {
-        if (!e.target.classList.contains("selected")) {
-            e.target.classList.add("selected");
-            e.target.previousElementSibling.classList.remove("selected");
-        }
-        difficult = "hard";
-    }
-    newGame();
-}
-
-function randomColor() {
-    r = Math.floor((Math.random() * 256));
-    g = Math.floor((Math.random() * 256));
-    b = Math.floor((Math.random() * 256));
-    return `rgb(${r},${g},${b})`
-}
-
-function compareColor(e) {
-    if (e.target.style.backgroundColor == correctAns) {
-        msg.innerText = "Correct"
-        if (difficult === "easy") {
-            for (i = 0; i < 3; i++) {
-                color[i].style.backgroundColor = correctAns;
-                color[i].style.display = "inline-block";
-                color[i].style.visibility = "visible";
-            }
-        }
-        if (difficult === "hard") {
-            for (i = 0; i < 6; i++) {
-                color[i].style.backgroundColor = correctAns;
-                color[i].style.display = "inline-block";
-                color[i].style.visibility = "visible";
-            }
-        }
-        setTimeout(newGame, 1500);
-    } else {
-        msg.innerText = "Try again"
-        msg.style.display = "inline-block";
-        e.target.style.visibility = "hidden"
-    }
-    msg.style.display = "inline-block";
-}
+newGameButton.addEventListener("click", render);
+render();
